@@ -2370,6 +2370,7 @@
         "stop_and_ungroup": "Stoppen und Gruppierung aufheben."
     },
     "play_shuffled": "Gemischt abspielen",
+    "play_library_mix": "Zufallsmix abspielen",
     "players_in_group": "Wiedergabegeräte in Gruppe",
     "audio_overlay_custom_sounds": "Benutzerdefinierte Sounds",
     "audio_overlay_add_custom": "Benutzerdefinierten Sound hinzufügen",

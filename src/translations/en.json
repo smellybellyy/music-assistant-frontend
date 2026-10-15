@@ -999,6 +999,7 @@
     },
     "play_replace": "Play Now (clear queue)",
     "play_shuffled": "Play shuffled",
+    "play_library_mix": "Play a random mix",
     "played": "Played",
     "images": "Images",
     "image_type": "Type",

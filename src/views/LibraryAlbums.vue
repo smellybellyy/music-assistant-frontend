@@ -6,6 +6,7 @@
     :show-favorites-only-filter="true"
     :load-paged-data="loadItems"
     :sort-keys="sortKeys"
+    :extra-menu-items="extraMenuItems"
     :update-available="updateAvailable"
     :title="$t('albums')"
     :allow-key-hooks="true"
@@ -21,11 +22,13 @@
 
 <script setup lang="ts">
 import ItemsListing, { LoadDataParams } from "@/components/ItemsListing.vue";
+import { ToolBarMenuItem } from "@/components/Toolbar.vue";
 import { onLibrarySyncCompleted } from "@/composables/useLibrarySync";
+import { playLibraryMix } from "@/helpers/media_item_actions";
 import api from "@/plugins/api";
 import { EventMessage, EventType, MediaType } from "@/plugins/api/interfaces";
 import { store } from "@/plugins/store";
-import { Disc3 } from "@lucide/vue";
+import { Disc3, Shuffle } from "@lucide/vue";
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
 defineOptions({
@@ -51,6 +54,14 @@ const sortKeys = [
   "album_artist_name",
   "album_artist_name_desc",
   "random",
+];
+
+const extraMenuItems: ToolBarMenuItem[] = [
+  {
+    label: "play_library_mix",
+    icon: Shuffle,
+    action: playLibraryMix,
+  },
 ];
 
 onMounted(() => {

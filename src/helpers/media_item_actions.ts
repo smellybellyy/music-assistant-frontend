@@ -88,6 +88,21 @@ export const handlePlayBtnClick = async function (
 };
 
 /**
+ * Start the library's Infinite Mix (random library tracks that keep coming), so
+ * a session can begin without picking anything first. Like a play button: the
+ * active player plays it, or the play menu opens (at the top centre) without one.
+ */
+export const playLibraryMix = async function () {
+  try {
+    const mix = await api.getItemByUri("builtin://playlist/infinite_mix");
+    await handlePlayBtnClick(mix, window.innerWidth / 2, 64);
+  } catch (err) {
+    console.error("Play action failed:", err);
+    toast.error($t("play_failed"));
+  }
+};
+
+/**
  * Handle a click on a media item, opening its details view or playing it.
  *
  * posX/posY anchor the menu for item types that show one instead.

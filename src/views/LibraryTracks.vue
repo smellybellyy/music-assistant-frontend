@@ -16,6 +16,11 @@
     :allow-key-hooks="true"
     :extra-menu-items="[
       {
+        label: 'play_library_mix',
+        icon: Shuffle,
+        action: playLibraryMix,
+      },
+      {
         label: 'add_url_item',
         labelArgs: [],
         action: () => {
@@ -40,10 +45,11 @@
 import AddManualLink from "@/components/AddManualLink.vue";
 import ItemsListing, { LoadDataParams } from "@/components/ItemsListing.vue";
 import { onLibrarySyncCompleted } from "@/composables/useLibrarySync";
+import { playLibraryMix } from "@/helpers/media_item_actions";
 import api from "@/plugins/api";
 import { EventMessage, EventType, MediaType } from "@/plugins/api/interfaces";
 import { store } from "@/plugins/store";
-import { ListPlus, Music2 } from "@lucide/vue";
+import { ListPlus, Music2, Shuffle } from "@lucide/vue";
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
 defineOptions({

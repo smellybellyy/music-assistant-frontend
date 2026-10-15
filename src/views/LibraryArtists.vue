@@ -12,6 +12,7 @@
     :show-search-button="true"
     :show-genre-filter="true"
     :sort-keys="sortKeys"
+    :extra-menu-items="extraMenuItems"
     :icon="ArtistIcon"
     :restore-state="true"
     :total="total"
@@ -22,7 +23,9 @@
 <script setup lang="ts">
 import ArtistIcon from "@/components/icons/ArtistIcon.vue";
 import ItemsListing, { LoadDataParams } from "@/components/ItemsListing.vue";
+import { ToolBarMenuItem } from "@/components/Toolbar.vue";
 import { onLibrarySyncCompleted } from "@/composables/useLibrarySync";
+import { playLibraryMix } from "@/helpers/media_item_actions";
 import api from "@/plugins/api";
 import {
   ArtistType,
@@ -30,6 +33,7 @@ import {
   EventType,
   MediaType,
 } from "@/plugins/api/interfaces";
+import { Shuffle } from "@lucide/vue";
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
 defineOptions({
@@ -51,6 +55,14 @@ const sortKeys = [
   "play_count",
   "play_count_desc",
   "random",
+];
+
+const extraMenuItems: ToolBarMenuItem[] = [
+  {
+    label: "play_library_mix",
+    icon: Shuffle,
+    action: playLibraryMix,
+  },
 ];
 
 const loadItems = async function (params: LoadDataParams) {
