@@ -70,6 +70,7 @@ const sortKeys = [
   "last_played_desc",
   "play_count",
   "play_count_desc",
+  "random",
 ];
 
 onMounted(() => {

@@ -50,6 +50,7 @@ const sortKeys = [
   "play_count_desc",
   "album_artist_name",
   "album_artist_name_desc",
+  "random",
 ];
 
 onMounted(() => {

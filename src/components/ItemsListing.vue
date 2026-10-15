@@ -1033,6 +1033,8 @@ const isSearchActive = computed(() => {
   return searchActive;
 });
 
+const isRandomSort = computed(() => params.value.sortBy.startsWith("random"));
+
 // true when the listing has been narrowed by any user-controllable filter
 // (search, favorites, provider, genre, album-type, ...). Used to keep an
 // otherwise hidden-on-empty listing visible — and to explain an empty result —
@@ -1579,7 +1581,19 @@ const loadData = async function (
     params.value.limit = props.limit;
     params.value.refresh = refresh;
 
-    if (loadPagedData != null) {
+    if (loadPagedData != null && params.value.offset && isRandomSort.value) {
+      // a random listing has no fixed order to page through: the server draws a
+      // new random sample on every request and returns nothing past the first
+      // page, so the next page is another sample without the items already shown.
+      // It ends once a sample brings nothing new.
+      const sample = await loadPagedData({ ...params.value, offset: 0 });
+      const shown = new Set(pagedItems.value.map((item) => item.uri));
+      const nextItems = sample.filter((item) => !shown.has(item.uri));
+      pagedItems.value.push(...nextItems);
+      if (!nextItems.length || Math.abs(sample.length - props.limit) > 10) {
+        allItemsReceived.value = true;
+      }
+    } else if (loadPagedData != null) {
       // server side paged listing (with filter support)
       const nextItems = await loadPagedData(params.value);
       if (params.value.offset) {

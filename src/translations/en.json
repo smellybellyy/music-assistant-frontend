@@ -855,7 +855,8 @@
         "album_artist_name": "Album artist",
         "album_artist_name_desc": "Album artist (descending)",
         "track_artist_name": "Track artist",
-        "track_artist_name_desc": "Track artist (descending)"
+        "track_artist_name_desc": "Track artist (descending)",
+        "random": "Random"
     },
     "pagination": {
         "first_page": "Go to first page",

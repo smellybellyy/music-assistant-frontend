@@ -476,3 +476,65 @@ describe("ItemsListing per-page search", () => {
     ).toBe("");
   });
 });
+
+describe("ItemsListing random sort", () => {
+  beforeEach(() => {
+    eventbus.all.clear();
+    events.listeners.length = 0;
+    mockGetLibraryGenres.mockReset();
+    mockGetLibraryGenres.mockResolvedValue([]);
+    mockSubscribeMulti.mockReset();
+    mockSubscribeMulti.mockImplementation(events.subscribeMulti);
+    store.prevState = undefined;
+  });
+
+  it("pages on with new random samples, never showing an item twice", async () => {
+    const tracksFrom = (first: number, count: number) =>
+      Array.from({ length: count }, (_, index) =>
+        track({ item_id: String(first + index), name: `Track ${index}` }),
+      );
+    // the server draws a new random sample on every request and returns
+    // nothing past the first page, so each sample is asked for at offset 0
+    const loadPagedData =
+      vi.fn<
+        (params: {
+          limit: number;
+          offset: number;
+          sortBy: string;
+        }) => Promise<Track[]>
+      >();
+    loadPagedData
+      // the load on mount
+      .mockImplementationOnce(async ({ limit }) => tracksFrom(0, limit))
+      // a sample of which half was shown already
+      .mockImplementationOnce(async ({ limit }) => tracksFrom(limit / 2, limit))
+      // a sample of nothing but shown items, which ends the listing
+      .mockImplementationOnce(async ({ limit }) => tracksFrom(0, limit))
+      // an empty page, so paging that carries on regardless still comes to an end
+      .mockResolvedValue([]);
+
+    const listing = mountListingRaw({
+      allowKeyHooks: true,
+      loadPagedData,
+      sortKeys: ["random"],
+    });
+    await flushPromises();
+    expect(loadPagedData).toHaveBeenCalledTimes(1);
+
+    // selecting everything pages through the listing to its end
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "a", ctrlKey: true }),
+    );
+    await flushPromises();
+
+    expect(loadPagedData).toHaveBeenCalledTimes(3);
+    for (const [params] of loadPagedData.mock.calls.slice(1)) {
+      expect(params.offset).toBe(0);
+      expect(params.sortBy).toBe("random");
+    }
+    const limit = loadPagedData.mock.calls[1][0].limit;
+    const shown = (listing.vm as unknown as { pagedItems: Track[] }).pagedItems;
+    expect(shown).toHaveLength(limit + limit / 2);
+    expect(new Set(shown.map((item) => item.uri)).size).toBe(shown.length);
+  });
+});

@@ -50,6 +50,7 @@ const sortKeys = [
   "last_played_desc",
   "play_count",
   "play_count_desc",
+  "random",
 ];
 
 const loadItems = async function (params: LoadDataParams) {

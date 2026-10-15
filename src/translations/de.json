@@ -822,7 +822,8 @@
         "ascending": "Ansteigend",
         "ascending_abbreviation": "Anst.",
         "descending": "Absteigend",
-        "descending_abbreviation": "Abst."
+        "descending_abbreviation": "Abst.",
+        "random": "Zufällig"
     },
     "state": {
         "idle": "Inaktiv",
