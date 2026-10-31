@@ -86,6 +86,22 @@ beforeEach(() => {
 });
 
 describe("AudioProcessingDetails", () => {
+  it("shows the source file under the input when one is known", () => {
+    const withFile = mountDetails(
+      {},
+      makeStreamDetails(),
+      undefined,
+      "Musik/A/01 - Song.mp3",
+    );
+    const file = withFile.get('[data-testid="audio-source-file"]');
+    expect(file.text()).toBe("Musik/A/01 - Song.mp3");
+    expect(file.element.closest('[data-section="input"]')).not.toBeNull();
+
+    expect(
+      mountDetails().find('[data-testid="audio-source-file"]').exists(),
+    ).toBe(false);
+  });
+
   it("renders the embedded processing model and server-grouped outputs", () => {
     const wrapper = mountDetails(makeFullChain());
 
@@ -936,12 +952,14 @@ function mountDetails(
   chain: Partial<AudioProcessingChain> = {},
   streamDetails = makeStreamDetails(),
   crossfadeIntent?: CrossfadeMode,
+  sourceFile?: string,
 ) {
   return mount(AudioProcessingDetails, {
     props: {
       chain: audioProcessingChain(chain),
       streamDetails,
       crossfadeIntent,
+      sourceFile,
     },
     global: {
       plugins: [i18n],
