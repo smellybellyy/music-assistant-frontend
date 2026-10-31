@@ -58,6 +58,18 @@
             <span v-else style="opacity: 0.4" :title="$t('tooltip.copy_uri')">{{
               getProviderUri(providerMapping)
             }}</span>
+            <!-- the file a Subsonic server reports (local files show it in the uri) -->
+            <div
+              v-if="
+                providerMapping.provider_domain === 'opensubsonic' &&
+                providerMapping.details
+              "
+              style="opacity: 0.6; overflow-wrap: anywhere; white-space: normal"
+              data-testid="provider-source-file"
+              :title="providerMapping.details"
+            >
+              {{ providerMapping.details }}
+            </div>
           </template>
           <template #append>
             <!-- hi res icon -->

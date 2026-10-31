@@ -1,6 +1,7 @@
 import { computed } from "vue";
 import { resolveExternalSource } from "@/composables/externalSource";
 import { sourceProviderId } from "@/composables/nowPlayingSource";
+import { queueItemSourceFile } from "@/helpers/sourceFile";
 import { store } from "@/plugins/store";
 import {
   AudioNormalizationMeasurementSource,
@@ -19,6 +20,8 @@ export interface ActiveAudioPath {
   crossfadeIntent?: CrossfadeMode;
   // whether this came from the active queue item or a live external source
   kind: "queue" | "source";
+  // the file the queue item plays from, where its provider tells
+  sourceFile?: string;
 }
 
 /**
@@ -69,6 +72,10 @@ export function useActiveAudioPath() {
         streamDetails: queueStreamDetails.value,
         audioProcessing: queueAudioProcessing.value,
         crossfadeIntent: queueCrossfadeIntent.value,
+        sourceFile: queueItemSourceFile(
+          store.curQueueItem,
+          queueStreamDetails.value,
+        ),
       };
     }
     const source = sourceAudio.value;

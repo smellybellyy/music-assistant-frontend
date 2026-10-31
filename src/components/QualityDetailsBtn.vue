@@ -40,6 +40,7 @@
           :chain="activeAudioPath.audioProcessing"
           :stream-details="activeAudioPath.streamDetails"
           :crossfade-intent="activeAudioPath.crossfadeIntent"
+          :source-file="activeAudioPath.sourceFile"
         />
       </div>
     </PopoverContent>

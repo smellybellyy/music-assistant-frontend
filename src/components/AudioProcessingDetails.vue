@@ -31,6 +31,14 @@
               stageIndex === inputStages.length - 1,
           }"
         />
+        <div
+          v-if="sourceFile"
+          class="audio-processing-source-file"
+          data-testid="audio-source-file"
+          :title="sourceFile"
+        >
+          {{ sourceFile }}
+        </div>
       </div>
     </section>
 
@@ -118,6 +126,8 @@ const props = defineProps<{
   chain: AudioProcessingChain;
   streamDetails: StreamDetails;
   crossfadeIntent?: CrossfadeMode;
+  // the file the input is read from, where the provider tells
+  sourceFile?: string;
 }>();
 
 const {
@@ -186,6 +196,13 @@ const {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+.audio-processing-details .audio-processing-source-file {
+  padding-left: 19px;
+  color: var(--muted-foreground);
+  font-size: 0.65rem;
+  overflow-wrap: anywhere;
 }
 
 .audio-processing-details .audio-processing-header-meta {
