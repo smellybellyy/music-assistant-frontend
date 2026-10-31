@@ -47,6 +47,8 @@ const route = useRoute();
 
 // Versioned: delays saved before sendspin-js 4.0.0 dropped its 200ms default would replay early.
 const SYNC_DELAY_STORAGE_KEY = "frontend.settings.sendspin_static_delay_v2";
+// A headset connecting fires several device changes in a row; rebuild once they settle.
+const DEVICE_CHANGE_SETTLE_MS = 1000;
 
 const audioRef = ref<HTMLAudioElement>();
 const silentAudioRef = ref<HTMLAudioElement>();
@@ -266,23 +268,10 @@ const registerPairing = () => {
     .catch((error) => console.warn("Sendspin: auto-pairing failed", error));
 };
 
-// Setup on mount
-onMounted(() => {
-  console.debug("Sendspin: Component mounted, connecting...");
-
-  registerWebPlayerAudioUnlock(primeAudio);
-
-  // If already showing active player metadata, play silent audio now that silentAudioRef exists
-  if (
-    metadataPlayerId.value === undefined &&
-    !mediaSessionDisabled.value &&
-    webPlayer.interacted &&
-    silentAudioRef.value
-  ) {
-    silentAudioRef.value.play().catch(() => {});
-  }
-
-  // Create and initialize player
+// Create and connect the player. The player's AudioContext is created once and
+// keeps the timing of the output it started on, so a later output change needs
+// a new player (see onDeviceChange).
+const startPlayer = () => {
   if (audioRef.value) {
     const audioElement = isMobileOutput ? audioRef.value : undefined;
 
@@ -362,6 +351,44 @@ onMounted(() => {
         console.error("Sendspin: Failed to connect", error);
       });
   }
+};
+
+// A Bluetooth headset connecting or going away moves the output under the
+// running AudioContext, whose latency estimate and output clock stay tuned to
+// the old device: playback turns choppy and stays so until a page reload. Do
+// what the reload does - a new player on the new output - once the changes settle.
+let deviceChangeTimeout: number | undefined;
+const onDeviceChange = () => {
+  if (deviceChangeTimeout) clearTimeout(deviceChangeTimeout);
+  deviceChangeTimeout = window.setTimeout(() => {
+    deviceChangeTimeout = undefined;
+    if (unmounted || !player) return;
+    console.debug("Sendspin: audio devices changed, rebuilding the player");
+    // "restart" keeps the server's player registered for the new connection
+    player.disconnect("restart");
+    player = null;
+    startPlayer();
+  }, DEVICE_CHANGE_SETTLE_MS);
+};
+
+// Setup on mount
+onMounted(() => {
+  console.debug("Sendspin: Component mounted, connecting...");
+
+  registerWebPlayerAudioUnlock(primeAudio);
+
+  // If already showing active player metadata, play silent audio now that silentAudioRef exists
+  if (
+    metadataPlayerId.value === undefined &&
+    !mediaSessionDisabled.value &&
+    webPlayer.interacted &&
+    silentAudioRef.value
+  ) {
+    silentAudioRef.value.play().catch(() => {});
+  }
+
+  startPlayer();
+  navigator.mediaDevices?.addEventListener("devicechange", onDeviceChange);
 
   // Audio element event listeners for mobile MediaSession resilience
   if (audioRef.value) {
@@ -390,6 +417,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
   unmounted = true;
   clearWebPlayerAudioUnlock(primeAudio);
+  navigator.mediaDevices?.removeEventListener("devicechange", onDeviceChange);
+  if (deviceChangeTimeout) clearTimeout(deviceChangeTimeout);
   if (player) {
     // The server holds a player registered for minutes after a "restart"
     // goodbye, which is what a hand-over to another tab needs. Once this

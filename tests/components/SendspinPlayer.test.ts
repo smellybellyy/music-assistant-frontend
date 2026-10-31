@@ -387,6 +387,42 @@ describe("SendspinPlayer MediaSession", () => {
     wrapper.unmount();
   });
 
+  it("rebuilds the player once audio device changes settle", async () => {
+    const deviceListeners = new Set<() => void>();
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: {
+        addEventListener: (_type: string, listener: () => void) =>
+          deviceListeners.add(listener),
+        removeEventListener: (_type: string, listener: () => void) =>
+          deviceListeners.delete(listener),
+      },
+    });
+    mockPrepareSendspinSession.mockResolvedValue(undefined);
+    const wrapper = mount(SendspinPlayer, {
+      props: { playerId: "web-player" },
+    });
+    await flushPromises();
+    expect(mockSendspinConnect).toHaveBeenCalledTimes(1);
+    vi.useFakeTimers();
+
+    // A headset connecting reports several changes in a row.
+    for (const listener of deviceListeners) listener();
+    vi.advanceTimersByTime(500);
+    for (const listener of deviceListeners) listener();
+    vi.advanceTimersByTime(999);
+    expect(mockSendspinDisconnect).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(1);
+    await flushPromises();
+    expect(mockSendspinDisconnect).toHaveBeenCalledExactlyOnceWith("restart");
+    expect(mockSendspinConnect).toHaveBeenCalledTimes(2);
+
+    wrapper.unmount();
+    expect(deviceListeners.size).toBe(0);
+    Reflect.deleteProperty(navigator, "mediaDevices");
+  });
+
   it("keeps the player registered while another tab takes over playback", async () => {
     mockPrepareSendspinSession.mockResolvedValue(undefined);
     const wrapper = mount(SendspinPlayer, {
